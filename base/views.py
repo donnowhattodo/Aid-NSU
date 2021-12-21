@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm
 from .models import Room, Topic
 from .forms import RoomForm
 #from django.http import HttpResponse
@@ -19,6 +20,9 @@ from .forms import RoomForm
 # ]
 
 def loginPage(request):
+    page = 'login' 
+    if request.user.is_authenticated:
+        return redirect('home')
 
     if request.method =='POST':
         username = request.POST.get('username')
@@ -37,7 +41,7 @@ def loginPage(request):
         else:
             messages.error(request, 'Username or Password does not exist')
 
-    context= {}
+    context= {'page':page}
     return render(request, 'base/login_register.html', context)
 
 
@@ -46,6 +50,11 @@ def logoutUser(request):
     return redirect('home')
     
     
+def registerPage(request):
+    page = 'register'
+    form = UserCreationForm()
+    return render(request, 'base/login_register.html',{'form':form})
+
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q')!= None else ''
@@ -107,7 +116,7 @@ def deleteRoom(request,pk):
 
     if request.user != room.host: 
         return HttpResponse('You are not aloowed here')
-        
+
     if request.method == 'POST':
         room.delete()
         return redirect('home')
