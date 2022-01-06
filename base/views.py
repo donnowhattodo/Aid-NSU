@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
-from .models import Room, Topic
+from .models import Room, Topic ,Message
 from .forms import RoomForm
 #from django.http import HttpResponse
 
@@ -45,11 +45,13 @@ def loginPage(request):
     return render(request, 'base/login_register.html', context)
 
 
+
 def logoutUser(request):
     logout(request)
     return redirect('home')
     
     
+
 def registerPage(request):
     #page = 'register'
     form = UserCreationForm()
@@ -63,9 +65,11 @@ def registerPage(request):
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'An error occured during register')
+            messages.error(request, 'An error occured during registration')
         
     return render(request, 'base/login_register.html',{'form':form})
+
+
 
 
 def home(request):
@@ -86,12 +90,21 @@ def home(request):
 
 def room(request,pk): 
     room = Room.objects.get(id=pk)
-#    room = None
-#     for i in rooms: 
-#         if i['id'] == int(pk):
-#             room=i
-    context = {'room':room}
+    room_messages = room.message_set.all().order_by('-created')
+
+    if request.method == 'POST':
+       message = message.object.create(
+           user = request.user,
+           room = room,
+           body = request.POST.get('body')
+       ) 
+       return redirect('room', pk = room.id)
+
+    context = {'room':room, 'room_messages':room_messages}
     return render(request,'base/room.html',context)
+
+
+
 
 @login_required(login_url='login')
 def createRoom(request):
@@ -103,6 +116,7 @@ def createRoom(request):
             return redirect('home')
     context ={'form':form}
     return render(request, 'base/room_form.html',context)
+
 
 
 @login_required(login_url='login')
@@ -120,6 +134,7 @@ def updateRoom(request, pk):
             return redirect('home')
     context= {'form':form}
     return render(request, 'base/room_form.html',context)
+
 
 
 @login_required(login_url='login')
