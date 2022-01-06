@@ -12,28 +12,37 @@ from .forms import RoomForm
 
 # Create your views here.
 
-#rooms = [
+# rooms = [
 #    {'id':1 , 'name':'Lets learn Python!'},
 #     {'id':2 , 'name':'Design with me'},
 #     {'id':3 , 'name':'frontend developer'},
-# 
+#
 # ]
 
+
+''' 
+#----------------------------------------------------------------------------
+     Login , Logout, Registration 
+#----------------------------------------------------------------------------
+'''
+#Log in User
+
+
 def loginPage(request):
-    page = 'login' 
+    page = 'login'
     if request.user.is_authenticated:
         return redirect('home')
 
-    if request.method =='POST':
+    if request.method == 'POST':
         username = request.POST.get('username').lower()
         password = request.POST.get('password')
 
-        try: 
+        try:
             user = User.objects.get(username=username)
-        except: 
+        except:
             messages.error(request, 'User does not exist')
-             
-        user =authenticate(request,username = username, password= password)
+
+        user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
@@ -41,17 +50,17 @@ def loginPage(request):
         else:
             messages.error(request, 'Username or Password does not exist')
 
-    context= {'page':page}
+    context = {'page': page}
     return render(request, 'base/login_register.html', context)
 
 
-
+# logout User
 def logoutUser(request):
     logout(request)
     return redirect('home')
-    
-    
 
+
+# Register The User
 def registerPage(request):
     #page = 'register'
     form = UserCreationForm()
@@ -59,72 +68,94 @@ def registerPage(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit = False)
+            user = form.save(commit=False)
             user.username = user.username.lower()
             user.save()
             login(request, user)
             return redirect('home')
         else:
             messages.error(request, 'An error occured during registration')
-        
-    return render(request, 'base/login_register.html',{'form':form})
+
+    return render(request, 'base/login_register.html', {'form': form})
 
 
+''' 
+#----------------------------------------------------------------------------
+      End of Login , Logout, Registration 
+#----------------------------------------------------------------------------
+'''
+
+
+''' 
+#----------------------------------------------------------------------------
+      Home Page 
+#----------------------------------------------------------------------------
+'''
+# Opening home Page
 
 
 def home(request):
-    q = request.GET.get('q') if request.GET.get('q')!= None else ''
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
 
-    rooms= Room.objects.filter(
-        Q(topic__name__contains = q)|
-        Q(name__icontains=q)|
+    rooms = Room.objects.filter(
+        Q(topic__name__contains=q) |
+        Q(name__icontains=q) |
         Q(description__icontains=q)
     )
 
     topics = Topic.objects.all()
     room_count = rooms.count()
+    room_messages = Message.objects.filter(Q(room__name__icontains=q))  # Mofidy the activity settings
 
-    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count}
-    return render(request, 'base/home.html',context)
+    context = {'rooms': rooms, 'topics': topics,
+               'room_count': room_count, 'room_messages': room_messages}
+    return render(request, 'base/home.html', context)
 
 
-def room(request,pk): 
+"""
+----------------------------
+# Available Topics or rooms
+----------------------------
+"""
+
+def room(request, pk):
     room = Room.objects.get(id=pk)
-    room_messages = room.message_set.all().order_by('-created')
+    room_messages = room.message_set.all()
+    participants = room.participants.all()
 
     if request.method == 'POST':
-       message =Message.objects.create(
-           user=request.user,
-           room=room,
-           body=request.POST.get('body')
-       ) 
-       return redirect('room', pk=room.id)
+        message = Message.objects.create(
+            user=request.user,
+            room=room,
+            body=request.POST.get('body')
+        )
+        room.participants.add(request.user)
+        return redirect('room', pk=room.id)
 
-    context = {'room':room, 'room_messages':room_messages}
-    return render(request,'base/room.html',context)
+    context = {'room': room, 'room_messages': room_messages,
+               'participants': participants}
+    return render(request, 'base/room.html', context)
 
 
-
-
+# Functionalities of a Room
 @login_required(login_url='login')
 def createRoom(request):
-    form =  RoomForm()
+    form = RoomForm()
     if request.method == 'POST':
         form = RoomForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('home')
-    context ={'form':form}
-    return render(request, 'base/room_form.html',context)
-
+    context = {'form': form}
+    return render(request, 'base/room_form.html', context)
 
 
 @login_required(login_url='login')
 def updateRoom(request, pk):
     room = Room.objects.get(id=pk)
-    form = RoomForm(instance = room)
+    form = RoomForm(instance=room)
 
-    if request.user != room.host: 
+    if request.user != room.host:
         return HttpResponse('You are not aloowed here')
 
     if request.method == 'POST':
@@ -132,19 +163,33 @@ def updateRoom(request, pk):
         if form.is_valid():
             form.save()
             return redirect('home')
-    context= {'form':form}
-    return render(request, 'base/room_form.html',context)
+    context = {'form': form}
+    return render(request, 'base/room_form.html', context)
 
 
-
+# delete Room
 @login_required(login_url='login')
-def deleteRoom(request,pk):
+def deleteRoom(request, pk):
     room = Room.objects.get(id=pk)
 
-    if request.user != room.host: 
+    if request.user != room.host:
         return HttpResponse('You are not aloowed here')
 
     if request.method == 'POST':
         room.delete()
         return redirect('home')
-    return render(request, 'base/delete.html',{'obj': room})
+    return render(request, 'base/delete.html', {'obj': room})
+
+
+# <!---delete message--!>
+@login_required(login_url='login')
+def deleteMesssage(request, pk):
+    message = Message.objects.get(id=pk)
+
+    if request.user != message.user:
+        return HttpResponse('You are not aloowed here')
+
+    if request.method == 'POST':
+        message.delete()
+        return redirect('home')
+    return render(request, 'base/delete.html', {'obj': message})
