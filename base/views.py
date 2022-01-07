@@ -105,7 +105,8 @@ def home(request):
 
     topics = Topic.objects.all()
     room_count = rooms.count()
-    room_messages = Message.objects.filter(Q(room__name__icontains=q))  # Mofidy the activity settings
+    room_messages = Message.objects.filter(
+        Q(room__name__icontains=q))  # Mofidy the activity settings
 
     context = {'rooms': rooms, 'topics': topics,
                'room_count': room_count, 'room_messages': room_messages}
@@ -117,6 +118,7 @@ def home(request):
 # Available Topics or rooms
 ----------------------------
 """
+
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
@@ -135,6 +137,23 @@ def room(request, pk):
     context = {'room': room, 'room_messages': room_messages,
                'participants': participants}
     return render(request, 'base/room.html', context)
+
+
+"""
+----------------------------
+# User Profile
+----------------------------
+"""
+
+
+def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all()
+    room_messages = user.message_set.all()
+    topics = Topic.objects.all()
+    context = {'user': user, 'rooms': rooms,
+               'room_messages': room_messages, 'topics': topics}
+    return render(request, 'base/profile.html', context)
 
 
 # Functionalities of a Room
