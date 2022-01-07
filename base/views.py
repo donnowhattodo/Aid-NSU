@@ -22,7 +22,7 @@ from .forms import RoomForm
 
 ''' 
 #----------------------------------------------------------------------------
-     Login , Logout, Registration 
+  |                Login , Logout, Registration                             | 
 #----------------------------------------------------------------------------
 '''
 #Log in User
@@ -81,14 +81,14 @@ def registerPage(request):
 
 ''' 
 #----------------------------------------------------------------------------
-      End of Login , Logout, Registration 
+ |             End of Login , Logout, Registration                         |
 #----------------------------------------------------------------------------
 '''
 
 
 ''' 
 #----------------------------------------------------------------------------
-      Home Page 
+|                           Home Page                                     |
 #----------------------------------------------------------------------------
 '''
 # Opening home Page
@@ -114,9 +114,9 @@ def home(request):
 
 
 """
-----------------------------
-# Available Topics or rooms
-----------------------------
+-------------------------------------
+|     Available Topics or rooms      |
+-------------------------------------
 """
 
 
@@ -141,7 +141,7 @@ def room(request, pk):
 
 """
 ----------------------------
-# User Profile
+|       User Profile        |
 ----------------------------
 """
 
@@ -156,6 +156,12 @@ def userProfile(request, pk):
     return render(request, 'base/profile.html', context)
 
 
+
+"""
+---------------------------------
+|       CRUD Rooms/Topics        |
+---------------------------------
+"""
 # Functionalities of a Room
 @login_required(login_url='login')
 def createRoom(request):
@@ -163,8 +169,11 @@ def createRoom(request):
     if request.method == 'POST':
         form = RoomForm(request.POST)
         if form.is_valid():
-            form.save()
+            room = form.save(commit=False)
+            room.host = request.user
+            room.save()
             return redirect('home')
+
     context = {'form': form}
     return render(request, 'base/room_form.html', context)
 
@@ -200,7 +209,13 @@ def deleteRoom(request, pk):
     return render(request, 'base/delete.html', {'obj': room})
 
 
-# <!---delete message--!>
+"""
+---------------------------------
+|      deleting messasges       |
+---------------------------------
+"""
+
+
 @login_required(login_url='login')
 def deleteMesssage(request, pk):
     message = Message.objects.get(id=pk)
