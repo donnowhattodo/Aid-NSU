@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from .models import Room, Topic, Message
-from .forms import RoomForm
+from .forms import RoomForm, UserForm
 #from django.http import HttpResponse
 
 # Create your views here.
@@ -103,7 +103,7 @@ def home(request):
         Q(description__icontains=q)
     )
 
-    topics = Topic.objects.all()
+    topics = Topic.objects.all()[0:5]
     room_count = rooms.count()
     room_messages = Message.objects.filter(
         Q(room__name__icontains=q))  # Mofidy the activity settings
@@ -244,3 +244,41 @@ def deleteMesssage(request, pk):
         message.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj': message})
+
+
+"""
+----------------------------
+|       Update User       |
+----------------------------
+"""
+@login_required(login_url='login')
+def updateUser(request):
+    user = request.user
+    form = UserForm(instance=user)
+    
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user-profile', pk = user.id)
+
+
+
+    context = {'form' : form}
+    return render(request,'base/update-user.html',context)
+
+"""
+----------------------------------------------------------
+|       Topics Page aswell as mobile responsiveness       |
+----------------------------------------------------------
+"""
+def topicsPage(request):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    topics = Topic.objects.filter(name__icontains = q)
+    return render(request, 'base/topics.html',{'topics' : topics})
+
+
+
+def activityPage(request):
+    room_messages = Message.objects.all()
+    return render(request,'base/activity.html', {'room_messages' : room_messages})
