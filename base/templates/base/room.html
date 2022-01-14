@@ -8,14 +8,14 @@
           <div class="room__top">
             <div class="room__topLeft">
               <a href="{% url 'home %'}">
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                <svg version="1.1" xmlns="https://picsum.photos/200/300" width="32" height="32" viewBox="0 0 32 32">
                   <title>arrow-left</title>
                   <path
                     d="M13.723 2.286l-13.723 13.714 13.719 13.714 1.616-1.611-10.96-10.96h27.625v-2.286h-27.625l10.965-10.965-1.616-1.607z"
                   ></path>
                 </svg>
               </a>
-              <h3>Study Room</h3>
+              <h3>Our Community</h3>
             </div>
             {% if room.host == request.user %}
             <div class="room__topRight">
@@ -25,7 +25,7 @@
                   height="32"
                   viewBox="0 0 24 24"
                   width="32"
-                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns="https://picsum.photos/200/300"
                 >
                   <title>edit</title>
                   <g>
@@ -46,7 +46,7 @@
                 </svg>
               </a>
               <a href="{% url 'delete-room' room.id %}">
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                <svg version="1.1" xmlns="https://picsum.photos/200/300" width="32" height="32" viewBox="0 0 32 32">
                   <title>remove</title>
                   <path
                     d="M27.314 6.019l-1.333-1.333-9.98 9.981-9.981-9.981-1.333 1.333 9.981 9.981-9.981 9.98 1.333 1.333 9.981-9.98 9.98 9.98 1.333-1.333-9.98-9.98 9.98-9.981z"
@@ -62,18 +62,20 @@
               <div class="room__info">
                 <h3>{{room.name}}</h3>
                 <span>{{room.created|timesince}} ago</span>
+                
               </div>
               <div class="room__hosted">
-                <p>Hosted By</p>
+                <p>Hosted By </p>
                 <a href="{% url 'user-profile' room.host.id %}" class="room__author">
                   <div class="avatar avatar--small">
-                    <img src="https://randomuser.me/api/portraits/men/37.jpg" />
+                    <img src="https://picsum.photos/200/300" />
                   </div>
                   <span>@{{room.host.username}}</span>
                 </a>
               </div>
               <div class="room__details">
                 <!--{{room.message.body}}-->
+                <p>{{room.description}}</p>
               </div>
               <span class="room__topics">{{room.topic}}</span>
             </div>
@@ -86,7 +88,7 @@
                     <div class="thread__author">
                       <a href="{% url 'user-profile' message.user.id %}" class="thread__authorInfo">
                         <div class="avatar avatar--small">
-                          <img src="https://randomuser.me/api/portraits/men/37.jpg" />
+                          <img src="https://picsum.photos/200/300" />
                         </div>
                         <span>@{{message.user.username}}</span>
                       </a>
@@ -96,7 +98,7 @@
                     {% if request.user == message.user %}
                     <a href="{% url 'delete-message' message.id %}">
                     <div class="thread__delete">
-                      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                      <svg version="1.1" xmlns="https://picsum.photos/200/300" width="32" height="32" viewBox="0 0 32 32">
                         <title>remove</title>
                         <path
                           d="M27.314 6.019l-1.333-1.333-9.98 9.981-9.981-9.981-1.333 1.333 9.981 9.981-9.981 9.98 1.333 1.333 9.981-9.98 9.98 9.98 1.333-1.333-9.98-9.98 9.98-9.981z"
@@ -129,12 +131,12 @@
           <div class="participants__list scroll">
             <a href="profile.html" class="participant">
               <div class="avatar avatar--medium">
-                <img src="https://randomuser.me/api/portraits/men/37.jpg" />
+                <img src="https://picsum.photos/200/300" />
               </div>
               {% for user in participants %}
             <a href="{% url 'user-profile' user.id %}" class="participant">
               <div class="avatar avatar--medium">
-                <img src="https://randomuser.me/api/portraits/men/37.jpg" />
+                <img src="https://picsum.photos/200/300" />
               </div>
               <p>
                 {{user.username}}

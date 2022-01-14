@@ -22,7 +22,7 @@ from .forms import RoomForm, UserForm
 
 ''' 
 #----------------------------------------------------------------------------
-  |                Login , Logout, Registration                             | 
+  |                Login , Logout, Registration                            | 
 #----------------------------------------------------------------------------
 '''
 #Log in User
@@ -93,10 +93,10 @@ def registerPage(request):
 '''
 # Opening home Page
 
-
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
+    #find the availabel room contents
     rooms = Room.objects.filter(
         Q(topic__name__contains=q) |
         Q(name__icontains=q) |
@@ -119,7 +119,7 @@ def home(request):
 -------------------------------------
 """
 
-
+@login_required(login_url='login')
 def room(request, pk):
     room = Room.objects.get(id=pk)
     room_messages = room.message_set.all()
@@ -158,9 +158,9 @@ def userProfile(request, pk):
 
 
 """
----------------------------------
-|       CRUD Rooms/Topics        |
----------------------------------
+---------------------------------------
+|            CRUD Rooms/Topics        |
+---------------------------------------
 """
 # Functionalities of a Room
 @login_required(login_url='login')
@@ -180,7 +180,6 @@ def createRoom(request):
         return redirect('home')
 
         #form = RoomForm(request.POST)
-        
         #if form.is_valid():
         #    room = form.save(commit=False)
         #    room.host = request.user
@@ -193,6 +192,7 @@ def createRoom(request):
 
 @login_required(login_url='login')
 def updateRoom(request, pk):
+    #[Mention and save the updated topic on the name of same topic then redirect to home]
     room = Room.objects.get(id=pk)
     form = RoomForm(instance=room)
     topics = Topic.objects.all()
@@ -202,6 +202,7 @@ def updateRoom(request, pk):
 
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
+
         topic, created = Topic.objects.get_or_create(name=topic_name)
         room.name = request.POST.get('name')
         room.topic = topic
